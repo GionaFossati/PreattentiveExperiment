@@ -46,9 +46,9 @@
 
     #scene {
       display: grid;
-  grid-gap: 1em;
-  grid-template-rows: repeat(var(--grid-rows), 1fr);
-  grid-template-columns: repeat(var(--grid-cols), 1fr);
+      grid-gap: 1em;
+      grid-template-rows: repeat(var(--grid-rows), 1fr);
+      grid-template-columns: repeat(var(--grid-cols), 1fr);
       margin: auto;
       width: 320px;
       grid-template-columns: auto auto auto auto;
@@ -60,20 +60,27 @@
       margin: 10px;
       text-align: center;
     }
-    
+
     .size {
       margin: auto;
       /*padding-right: 12px;
       padding-left: 14px; */
     }
-    
   </style>
 
-  
+  <script>
+    var ignore = function (event) {
+      event.preventDefault();
+    }
+    var ignoreSpace = function (event) {
+      if (event == "Space") event.preventDefault();
+    }
+  </script>
+
 </head>
 
 
-<body onload="createScene();">
+<body onload="createScene();" onkeydown="ignoreSpace(event);" onkeypress="keyListener(event);">
   <div>
     <form id="form">
 
@@ -86,13 +93,11 @@
       <span class="formLb">Trial:</span>
       <select class="select" id="trialSel" onchange="onchangeTrial()"></select>
 
-      <button onclick="startExperiment(event)">GO</button>
+      <button onclick="startExperiment(event)" onkeyup="ignore(event)">GO</button>
 
     </form>
 
-    <div id="instructions" style="margin: 12px 12px 12px;">
-
-    </div>
+    <div id="instructions"></div>
   </div>
   <div id="scene"></div>
 </body>

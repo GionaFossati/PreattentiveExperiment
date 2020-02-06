@@ -115,27 +115,36 @@ function shuffle(array) {
 var startExperiment = function (event) {
   event.preventDefault();
 
-    for (var i = 0; i < ctx.trials.length; i++) {
-      if (ctx.trials[i][ctx.participantIndex] === ctx.participant) {
-        if (parseInt(ctx.trials[i][ctx.blockIndex]) == ctx.startBlock) {
-          if (parseInt(ctx.trials[i][ctx.trialIndex]) == ctx.startTrial) {
-            ctx.cpt = i;
-          }
+  for (var i = 0; i < ctx.trials.length; i++) {
+    if (ctx.trials[i][ctx.participantIndex] === ctx.participant) {
+      if (parseInt(ctx.trials[i][ctx.blockIndex]) == ctx.startBlock) {
+        if (parseInt(ctx.trials[i][ctx.trialIndex]) == ctx.startTrial) {
+          ctx.cpt = i;
         }
       }
     }
-
-    console.log("start experiment at " + ctx.cpt);
-    nextTrial();
   }
 
+  console.log("start experiment at " + ctx.cpt);
+  nextTrial();
+}
 
-   
+var keyListener = function(event) {
+  event.preventDefault();
+
+  if(ctx.state == state.INTERTITLE && event.code == "Enter") {
+    console.log("Enterpressed")
+    
+  } else if(ctx.state == state.SHAPES && event.code == "Space") {
+    console.log("Spacepressed")
+  }
+}
+
+
 
 var createScene = function () {
   loadData();
 };
-
 
 /****************************************/
 /******** STARTING PARAMETERS ***********/
