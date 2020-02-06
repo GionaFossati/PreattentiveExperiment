@@ -129,28 +129,42 @@ var startExperiment = function (event) {
   nextTrial();
 }
 
-var keyListener = function(event) {
+var keyListener = function (event) {
   event.preventDefault();
 
-  if(ctx.state == state.INTERTITLE && event.code == "Enter") {
-    console.log("Enterpressed")
+  if (ctx.state == state.INTERTITLE && event.code == "Enter") {
     container.setAttribute("style", "")
     ctx.state = state.SHAPES
     //TODO Starttimer
-    
-  } else if(ctx.state == state.SHAPES && event.code == "Space") {
-    console.log("Spacepressed")
+
+  } else if (ctx.state == state.SHAPES && event.code == "Space") {
+    event.preventDefault();
     //TODO stoptimer 
-    //TODO hide table and show placeholders
+    showPlaceholders();
   }
 }
 
+container.addEventListener("click", (event) => {
+  if (event.target.id=="target" && ctx.state == state.PLACEHOLDERS) {
+    //change to next trial
+    console.log("right!")
+    ctx.cpt++
+    nextTrial()
+  } else if (event.target.id!=="target" && ctx.state == state.PLACEHOLDERS) {
+    console.log("wrong!")
+    instructions.innerHTML="<h1>WROOOOOOOOONG!!! Again</h1>"
+    ctx.state = state.INTERTITLE
+    nextTrial()
+  } 
+});
 
-
-var createScene = function () {
-  loadData();
-};
-
+var showPlaceholders = function() {
+  ctx.state = state.PLACEHOLDERS
+  items = document.querySelectorAll('img');
+  items.forEach(x => {
+    x.setAttribute('src', "./overlay.svg");
+    })
+}
 /****************************************/
 /******** STARTING PARAMETERS ***********/
 /****************************************/
