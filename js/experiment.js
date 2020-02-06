@@ -41,12 +41,29 @@ var shapes2 = {
 };
 
 var shapes_array = [shapes1, shapes2];
+var errorCount = 0;
+var lastParticipant = "1";
+var tempTrial;
+var tempParticipantTestJson = [];
+var trialTime;
 
 var nextTrial = function () {
+
+  tempTrial=ctx.trials[ctx.cpt];
+  console.log(ctx.trials[ctx.cpt].ParticipantID)
+  if (ctx.trials[ctx.cpt].ParticipantID!==lastParticipant) {
+    //it understands if the participant number is the same
+    console.log("Change of participant detected")
+    alert("Experiment finished")   
+    lastParticipant = ctx.trials[ctx.cpt].ParticipantID
+    downloadCSV(tempParticipantTestJson);
+    tempParticipantTestJson = []
+    instructions.innerText="FINISHED! DOWNLOAD CSV AND GO TO NEXT PARTICIPANT"
+  } 
+
   ctx.state = state.INTERTITLE;
   var temp_target = document.createElement("img");
   temp_target.setAttribute("id", "target");
-
   //choose randomly between targets1 or targets2
   temp_shapes = shapes_array[Math.floor(Math.random() * shapes_array.length)];
 
@@ -92,6 +109,7 @@ function makeRows(numberOfElements, temp_target, temp_shapes) {
     let cell = document.createElement("img");
 
     cell.setAttribute("src", temp_shapes.default);
+    cell.setAttribute("onmouseover","bigImg(this)");
     shapes.push(cell);
 
 
@@ -105,7 +123,6 @@ function makeRows(numberOfElements, temp_target, temp_shapes) {
       container.appendChild(shape).className = "size"
     } else {
       container.appendChild(shape).className = "grid-item";
-
     }
 
     container.style.visibility = "hidden";
@@ -135,33 +152,52 @@ var startExperiment = function (event) {
   nextTrial();
 }
 
+
+
 var keyListener = function (event) {
   event.preventDefault();
 
   if (ctx.state == state.INTERTITLE && event.code == "Enter") {
+    
     container.setAttribute("style", "")
+    
     ctx.state = state.SHAPES
+    
     startTimer()
 
   } else if (ctx.state == state.SHAPES && event.code == "Space") {
+    
     event.preventDefault();
+    
     stopTimer();
-    console.log(totalMilliseconds + " Milliseconds");
+    trialTime = timerCount;
+    
+    console.log("Time to complete: " + trialTime);
+    
     showPlaceholders();
   }
 }
 
 container.addEventListener("click", (event) => {
   if (event.target.id == "target" && ctx.state == state.PLACEHOLDERS) {
-    //change to next trial
-    console.log("right!")
+
+    console.log("right! Error count: " + errorCount + "Time to complete: " + trialTime);
+    
+    //TODO Append the trial in the csv here, before resetting errorcount
+    tempTrial.visualSearchTime = trialTime;
+    tempTrial.errorCount = errorCount;
+    tempParticipantTestJson.push(tempTrial);
+    
+    errorCount = 0;
     ctx.cpt++
     nextTrial()
+
   } else if (event.target.id !== "target" && ctx.state == state.PLACEHOLDERS) {
-    console.log("wrong!")
     instructions.innerHTML = "<h1>WROOOOOOOOONG!!! Again</h1>"
     ctx.state = state.INTERTITLE
-    nextTrial()
+    errorCount++
+    console.log("wrong! Error count: " + errorCount + "Time to complete: " + trialTime);
+    nextTrial();
   }
 });
 
@@ -173,9 +209,8 @@ var showPlaceholders = function () {
   })
 }
 
-
-//timer
-var totalMilliseconds;
+//timerCount
+var timerCount;
 
 var startTimer = function() {
   clearTimer();
@@ -183,15 +218,70 @@ var startTimer = function() {
 }
 
 function setTime() {
-  totalMilliseconds += 10;
+  timerCount += 10;
 }
 var stopTimer = function() {
   clearInterval(setTime);
 }
 
 var clearTimer = function() {
-  totalMilliseconds = 0;
+  timerCount = 0;
 }
+
+//append into csv
+function convertArrayOfObjectsToCSV(args) {  
+  var result, ctr, keys, columnDelimiter, lineDelimiter, data;
+
+  data = args.data || null;
+  if (data == null || !data.length) {
+      return null;
+  }
+
+  columnDelimiter = args.columnDelimiter || ',';
+  lineDelimiter = args.lineDelimiter || '\n';
+
+  keys = Object.keys(data[0]);
+
+  result = '';
+  result += keys.join(columnDelimiter);
+  result += lineDelimiter;
+
+  data.forEach(function(item) {
+      ctr = 0;
+      keys.forEach(function(key) {
+          if (ctr > 0) result += columnDelimiter;
+
+          result += item[key];
+          ctr++;
+      });
+      result += lineDelimiter;
+  });
+
+  return result;
+}
+
+function downloadCSV(args) {  
+  var data, filename, link;
+  var csv = convertArrayOfObjectsToCSV({
+      data: tempParticipantTestJson
+  });
+  if (csv == null) return;
+
+  filename = args.filename || 'export.csv';
+
+  if (!csv.match(/^data:text\/csv/i)) {
+      csv = 'data:text/csv;charset=utf-8,' + csv;
+  }
+  data = encodeURI(csv);
+
+  link = document.createElement('a');
+  link.setAttribute('href', data);
+  link.setAttribute('download', filename);
+  link.click();
+}
+
+
+
 /****************************************/
 /******** STARTING PARAMETERS ***********/
 /****************************************/

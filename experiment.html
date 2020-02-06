@@ -29,14 +29,10 @@
     }
 
     .instr {
-      font-family: sans-serif;
-      background-color: white;
       text-align: center;
-      margin-left: auto;
-      margin-right: auto;
-      margin-top: 2em;
-      width: 30em;
-      font-size: 200%;
+      font-family: monospace;
+      margin: 30px;
+      font-size: 16px;
     }
 
     :root {
@@ -50,9 +46,9 @@
       grid-template-rows: repeat(var(--grid-rows), 1fr);
       grid-template-columns: repeat(var(--grid-cols), 1fr);
       margin: auto;
-      width: 320px;
+      width: 310px;
       grid-template-columns: auto auto auto auto;
-      margin-top: 10%;
+      margin-top: 7%;
 
     }
 
@@ -63,8 +59,12 @@
 
     .size {
       margin: auto;
-      /*padding-right: 12px;
-      padding-left: 14px; */
+    }
+
+    #download {
+      position: absolute;
+      right: 15px;
+      top: 10px;
     }
   </style>
 
@@ -94,10 +94,10 @@
       <select class="select" id="trialSel" onchange="onchangeTrial()"></select>
 
       <button onclick="startExperiment(event)" onkeyup="ignore(event)">GO</button>
-
+      <a id="download" href='#' onclick='downloadCSV({ filename: "stock-data.csv" });'>Download CSV</a>
     </form>
 
-    <div id="instructions"></div>
+    <div class="instr" id="instructions"></div>
   </div>
   <div id="scene"></div>
 </body>
