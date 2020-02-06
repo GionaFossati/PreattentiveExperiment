@@ -25,23 +25,30 @@ var ctx = {
 
 const container = document.getElementById("scene");
 var instructions = document.getElementById('instructions');
-/* var state = {
-  none :false,
-  intertitle : true,
-  shapes : false,
-  placeholder : false,
 
-} */
-var targets = {
-  size: "./blue_big.svg",
-  colour: "./red_normal.svg",
-  sizeColour: "./red_big.svg"
-}
+var shapes1 = {
+  size: "./targets_svgs/blue_big.svg",
+  colour: "./targets_svgs/red_normal.svg",
+  sizeColour: "./targets_svgs/red_big.svg",
+  default: "./targets_svgs/blue_normal.svg",
+};
+
+var shapes2 = {
+  size: "./targets_svgs/red_big.svg",
+  colour: "./targets_svgs/blue_normal.svg",
+  sizeColour: "./targets_svgs/blue_big.svg",
+  default: "./targets_svgs/red_normal.svg",
+};
+
+var shapes_array = [shapes1, shapes2];
 
 var nextTrial = function () {
   ctx.state = state.INTERTITLE;
   var temp_target = document.createElement("img");
   temp_target.setAttribute("id", "target");
+
+  //choose randomly between targets1 or targets2
+  temp_shapes = shapes_array[Math.floor(Math.random() * shapes_array.length)];
 
   console.log(ctx.trials[ctx.cpt]["OC"])
   console.log(ctx.trials[ctx.cpt]["VV"])
@@ -49,42 +56,42 @@ var nextTrial = function () {
 
   switch (ctx.trials[ctx.cpt]["VV"]) {
     case "Colour":
-      temp_target.setAttribute("src", targets.colour);
+      temp_target.setAttribute("src", temp_shapes.colour);
       break;
     case "Size":
-      temp_target.setAttribute("src", targets.size);
+      temp_target.setAttribute("src", temp_shapes.size);
       temp_target.setAttribute("class", "size");
       break;
     case "Colour_and_Size":
       temp_target.setAttribute("class", "size");
-      temp_target.setAttribute("src", targets.sizeColour);
+      temp_target.setAttribute("src", temp_shapes.sizeColour);
       break;
   }
 
   switch (ctx.trials[ctx.cpt]["OC"]) {
     case 'Low':
-      makeRows(12, temp_target);
+      makeRows(12, temp_target, temp_shapes);
       container.setAttribute("width", "208px")
       break;
     case 'Medium':
-      makeRows(15, temp_target)
+      makeRows(15, temp_target, temp_shapes)
     case 'High':
-      makeRows(24, temp_target)
+      makeRows(24, temp_target, temp_shapes)
       break;
   }
 
 }
 
-function makeRows(numberOfElements, target) {
+function makeRows(numberOfElements, temp_target, temp_shapes) {
   container.innerHTML = '';
   var shapes = [];
-  shapes.push(target);
+  shapes.push(temp_target);
 
   for (c = 0; c < numberOfElements - 1; c++) {
 
     let cell = document.createElement("img");
 
-    cell.setAttribute("src", "./blue_normal.svg");
+    cell.setAttribute("src", temp_shapes.default);
     shapes.push(cell);
 
 
@@ -111,7 +118,6 @@ function shuffle(array) {
   array.sort(() => Math.random() - 0.5);
 }
 
-
 var startExperiment = function (event) {
   event.preventDefault();
 
@@ -135,35 +141,56 @@ var keyListener = function (event) {
   if (ctx.state == state.INTERTITLE && event.code == "Enter") {
     container.setAttribute("style", "")
     ctx.state = state.SHAPES
-    //TODO Starttimer
+    startTimer()
 
   } else if (ctx.state == state.SHAPES && event.code == "Space") {
     event.preventDefault();
-    //TODO stoptimer 
+    stopTimer();
+    console.log(totalMilliseconds + " Milliseconds");
     showPlaceholders();
   }
 }
 
 container.addEventListener("click", (event) => {
-  if (event.target.id=="target" && ctx.state == state.PLACEHOLDERS) {
+  if (event.target.id == "target" && ctx.state == state.PLACEHOLDERS) {
     //change to next trial
     console.log("right!")
     ctx.cpt++
     nextTrial()
-  } else if (event.target.id!=="target" && ctx.state == state.PLACEHOLDERS) {
+  } else if (event.target.id !== "target" && ctx.state == state.PLACEHOLDERS) {
     console.log("wrong!")
-    instructions.innerHTML="<h1>WROOOOOOOOONG!!! Again</h1>"
+    instructions.innerHTML = "<h1>WROOOOOOOOONG!!! Again</h1>"
     ctx.state = state.INTERTITLE
     nextTrial()
-  } 
+  }
 });
 
-var showPlaceholders = function() {
+var showPlaceholders = function () {
   ctx.state = state.PLACEHOLDERS
   items = document.querySelectorAll('img');
   items.forEach(x => {
     x.setAttribute('src', "./overlay.svg");
-    })
+  })
+}
+
+
+//timer
+var totalMilliseconds;
+
+var startTimer = function() {
+  clearTimer();
+  setInterval(setTime, 10);
+}
+
+function setTime() {
+  totalMilliseconds += 10;
+}
+var stopTimer = function() {
+  clearInterval(setTime);
+}
+
+var clearTimer = function() {
+  totalMilliseconds = 0;
 }
 /****************************************/
 /******** STARTING PARAMETERS ***********/
