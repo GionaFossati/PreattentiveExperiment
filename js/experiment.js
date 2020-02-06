@@ -134,9 +134,14 @@ var keyListener = function(event) {
 
   if(ctx.state == state.INTERTITLE && event.code == "Enter") {
     console.log("Enterpressed")
+    container.setAttribute("style", "")
+    ctx.state = state.SHAPES
+    //TODO Starttimer
     
   } else if(ctx.state == state.SHAPES && event.code == "Space") {
     console.log("Spacepressed")
+    //TODO stoptimer 
+    //TODO hide table and show placeholders
   }
 }
 
