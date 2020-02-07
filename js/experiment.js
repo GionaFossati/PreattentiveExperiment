@@ -40,7 +40,36 @@ var shapes2 = {
   default: "./targets_svgs/red_normal.svg",
 };
 
+var shapesColourSize1 = {
+  default1: "./targets_svgs/red_big.svg",
+  default2: "./targets_svgs/blue_normal.svg",
+  default3: "./targets_svgs/red_normal.svg",
+  target: "./targets_svgs/blue_big.svg",
+};
+
+var shapesColourSize2 = {
+  default1: "./targets_svgs/blue_normal.svg",
+  default2: "./targets_svgs/blue_big.svg",
+  default3: "./targets_svgs/red_normal.svg",
+  target: "./targets_svgs/red_big.svg",
+};
+
+var shapesColourSize3 = {
+  default1: "./targets_svgs/red_big.svg",
+  default2: "./targets_svgs/blue_big.svg",
+  default3: "./targets_svgs/red_normal.svg",
+  target: "./targets_svgs/blue_normal.svg",
+};
+
+var shapesColourSize4 = {
+  default1: "./targets_svgs/red_big.svg",
+  default2: "./targets_svgs/blue_normal.svg",
+  default3: "./targets_svgs/blue_big.svg",
+  target: "./targets_svgs/red_normal.svg",
+};
+
 var shapes_array = [shapes1, shapes2];
+var coloursize_array = [shapesColourSize1, shapesColourSize2, shapesColourSize3, shapesColourSize4];
 var errorCount = 0;
 var lastParticipant = "1";
 var tempTrial;
@@ -49,24 +78,37 @@ var trialTime;
 
 var nextTrial = function () {
 
-  tempTrial=ctx.trials[ctx.cpt];
+  tempTrial = ctx.trials[ctx.cpt];
   console.log(ctx.trials[ctx.cpt].ParticipantID)
-  if (ctx.trials[ctx.cpt].ParticipantID!==lastParticipant) {
+  if (ctx.trials[ctx.cpt].ParticipantID !== lastParticipant) {
     //it understands if the participant number is the same
     console.log("Change of participant detected")
-    alert("Experiment finished")   
+    alert("Experiment finished")
     lastParticipant = ctx.trials[ctx.cpt].ParticipantID
     downloadCSV(tempParticipantTestJson);
     tempParticipantTestJson = []
-    instructions.innerText="FINISHED! DOWNLOAD CSV AND GO TO NEXT PARTICIPANT"
-  } 
+    instructions.innerText = "FINISHED! DOWNLOAD CSV AND GO TO NEXT PARTICIPANT"
+  }
 
   ctx.state = state.INTERTITLE;
   var temp_target = document.createElement("img");
   temp_target.setAttribute("id", "target");
-  //choose randomly between targets1 or targets2
-  temp_shapes = shapes_array[Math.floor(Math.random() * shapes_array.length)];
 
+  switch (ctx.trials[ctx.cpt]["VV"]) {
+    case "Colour":
+      temp_shapes = shapes_array[Math.floor(Math.random() * shapes_array.length)];
+      console.log("è o colour o size: " + (ctx.trials[ctx.cpt]["VV"]))
+      break;
+
+    case "Size":
+      temp_shapes = shapes_array[Math.floor(Math.random() * shapes_array.length)];
+      console.log("è o colour o size: " + (ctx.trials[ctx.cpt]["VV"]))
+      break;
+
+    case "Colour_and_Size":
+      temp_shapes = coloursize_array[Math.floor(Math.random() * coloursize_array.length)];
+      break;
+  }
   console.log(ctx.trials[ctx.cpt]["OC"])
   console.log(ctx.trials[ctx.cpt]["VV"])
 
@@ -81,7 +123,8 @@ var nextTrial = function () {
       break;
     case "Colour_and_Size":
       temp_target.setAttribute("class", "size");
-      temp_target.setAttribute("src", temp_shapes.sizeColour);
+      console.log(temp_target)
+      temp_target.setAttribute("src", temp_shapes.target);
       break;
   }
 
@@ -103,18 +146,67 @@ function makeRows(numberOfElements, temp_target, temp_shapes) {
   container.innerHTML = '';
   var shapes = [];
   shapes.push(temp_target);
+  var selectorCounter = [0, 0, 0];
+  console.log(temp_shapes)
 
   for (c = 0; c < numberOfElements - 1; c++) {
 
     let cell = document.createElement("img");
 
-    cell.setAttribute("src", temp_shapes.default);
-    cell.setAttribute("onmouseover","bigImg(this)");
-    shapes.push(cell);
+    if (temp_shapes.default1) {
 
+      selector = Math.floor(Math.random() * 3) + 1;
+
+
+
+      switch (selector) {
+        case 1:
+          cell.setAttribute("src", temp_shapes.default1);
+          selectorCounter[0]++
+          break;
+        case 2:
+          cell.setAttribute("src", temp_shapes.default2);
+          selectorCounter[1]++
+          break;
+        case 3:
+          cell.setAttribute("src", temp_shapes.default3)
+          selectorCounter[2]++
+          break;
+      }
+    } else {
+      cell.setAttribute("src", temp_shapes.default);
+    }
+    shapes.push(cell);
 
   }
 
+  if (temp_shapes.default1) {
+    if (checkDuplicates(selectorCounter)) {
+      pushInContainer(shapes)
+    } else {
+      makeRows(numberOfElements, temp_target, temp_shapes)
+    }
+
+  } else {
+    pushInContainer(shapes)
+  }
+
+
+  container.style.visibility = "hidden";
+  instructions.innerHTML = "Multiple shapes will get displayed. <br> Only <b>one shape</b> is different from all other shapes.<br><br> 1. Spot it as fast as possible and press <i>Space</i> bar;<br> 2. Click on the placeholder over that shape.<br> 3. Press <i>Enter</i> key when ready to start.<br>"
+
+
+};
+
+var checkDuplicates = function (selectorCounter) {
+  if (selectorCounter[0] >= 2 && selectorCounter[1] >= 2 && selectorCounter[2] >= 2) {
+    return true
+  } else {
+    return false
+  }
+}
+
+var pushInContainer = function (shapes) {
   shuffle(shapes)
 
   shapes.forEach((shape) => {
@@ -125,11 +217,9 @@ function makeRows(numberOfElements, temp_target, temp_shapes) {
       container.appendChild(shape).className = "grid-item";
     }
 
-    container.style.visibility = "hidden";
-    instructions.innerHTML = "Multiple shapes will get displayed. <br> Only <b>one shape</b> is different from all other shapes.<br><br> 1. Spot it as fast as possible and press <i>Space</i> bar;<br> 2. Click on the placeholder over that shape.<br> 3. Press <i>Enter</i> key when ready to start.<br>"
   });
+}
 
-};
 
 function shuffle(array) {
   array.sort(() => Math.random() - 0.5);
@@ -158,22 +248,22 @@ var keyListener = function (event) {
   event.preventDefault();
 
   if (ctx.state == state.INTERTITLE && event.code == "Enter") {
-    
+
     container.setAttribute("style", "")
-    
+
     ctx.state = state.SHAPES
-    
+
     startTimer()
 
   } else if (ctx.state == state.SHAPES && event.code == "Space") {
-    
+
     event.preventDefault();
-    
+
     stopTimer();
     trialTime = timerCount;
-    
+
     console.log("Time to complete: " + trialTime);
-    
+
     showPlaceholders();
   }
 }
@@ -182,12 +272,12 @@ container.addEventListener("click", (event) => {
   if (event.target.id == "target" && ctx.state == state.PLACEHOLDERS) {
 
     console.log("right! Error count: " + errorCount + "Time to complete: " + trialTime);
-    
+
     //TODO Append the trial in the csv here, before resetting errorcount
     tempTrial.visualSearchTime = trialTime;
     tempTrial.errorCount = errorCount;
     tempParticipantTestJson.push(tempTrial);
-    
+
     errorCount = 0;
     ctx.cpt++
     nextTrial()
@@ -212,7 +302,7 @@ var showPlaceholders = function () {
 //timerCount
 var timerCount;
 
-var startTimer = function() {
+var startTimer = function () {
   clearTimer();
   setInterval(setTime, 10);
 }
@@ -220,21 +310,21 @@ var startTimer = function() {
 function setTime() {
   timerCount += 10;
 }
-var stopTimer = function() {
+var stopTimer = function () {
   clearInterval(setTime);
 }
 
-var clearTimer = function() {
+var clearTimer = function () {
   timerCount = 0;
 }
 
 //append into csv
-function convertArrayOfObjectsToCSV(args) {  
+function convertArrayOfObjectsToCSV(args) {
   var result, ctr, keys, columnDelimiter, lineDelimiter, data;
 
   data = args.data || null;
   if (data == null || !data.length) {
-      return null;
+    return null;
   }
 
   columnDelimiter = args.columnDelimiter || ',';
@@ -246,31 +336,31 @@ function convertArrayOfObjectsToCSV(args) {
   result += keys.join(columnDelimiter);
   result += lineDelimiter;
 
-  data.forEach(function(item) {
-      ctr = 0;
-      keys.forEach(function(key) {
-          if (ctr > 0) result += columnDelimiter;
+  data.forEach(function (item) {
+    ctr = 0;
+    keys.forEach(function (key) {
+      if (ctr > 0) result += columnDelimiter;
 
-          result += item[key];
-          ctr++;
-      });
-      result += lineDelimiter;
+      result += item[key];
+      ctr++;
+    });
+    result += lineDelimiter;
   });
 
   return result;
 }
 
-function downloadCSV(args) {  
+function downloadCSV(args) {
   var data, filename, link;
   var csv = convertArrayOfObjectsToCSV({
-      data: tempParticipantTestJson
+    data: tempParticipantTestJson
   });
   if (csv == null) return;
 
   filename = args.filename || 'export.csv';
 
   if (!csv.match(/^data:text\/csv/i)) {
-      csv = 'data:text/csv;charset=utf-8,' + csv;
+    csv = 'data:text/csv;charset=utf-8,' + csv;
   }
   data = encodeURI(csv);
 
